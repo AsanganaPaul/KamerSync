@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,16 +12,18 @@ import 'services/notification_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await dotenv.load(fileName: '.env');
+  // Load environment variables if .env exists (skip gracefully on web)
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('No .env file found – using demo mode for AI chatbot');
+  }
 
-  // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -28,7 +31,6 @@ Future<void> main() async {
     ),
   );
 
-  // Initialize Firebase
   try {
     await Firebase.initializeApp();
     await NotificationService.initialize();
