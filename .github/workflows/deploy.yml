@@ -1,10 +1,8 @@
 name: Deploy Flutter Web to GitHub Pages
 
 on:
-  # Trigger the workflow on pushes to the main branch
   push:
     branches: ["main"]
-  # Allow manual triggering from GitHub's Actions tab
   workflow_dispatch:
 
 permissions:
@@ -26,7 +24,18 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.27.0'
           channel: 'stable'
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            build/
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
 
       - name: Install Dependencies
         run: flutter pub get
