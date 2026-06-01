@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 /// Notification service — handles FCM + local notifications
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -16,8 +17,9 @@ class NotificationService {
       android: androidSettings,
       iOS: iosSettings,
     );
-    await _plugin.initialize(settings: settings);
+    await _plugin.initialize(settings);
   }
+
   static Future<void> showNotification({
     required String title,
     required String body,
@@ -39,10 +41,10 @@ class NotificationService {
     // Generate a unique ID based on timestamp
     final id = DateTime.now().millisecondsSinceEpoch.remainder(1000000);
     await _plugin.show(
-      id: id,            // Changed to named parameter
-      title: title,      // Changed to named parameter
-      body: body,        // Changed to named parameter
-      notificationDetails: details,
+      id, // Changed to named parameter
+      title, // Changed to named parameter
+      body, // Changed to named parameter
+      details,
       payload: payload,
     );
   }

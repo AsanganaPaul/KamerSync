@@ -24,8 +24,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
-          channel: 'stable'
+          flutter-version: "3.30.0"
+          channel: "stable"
 
       - name: Install Dependencies
         run: flutter pub get
@@ -42,7 +42,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './build/web'
+          path: "./build/web"
 
   deploy:
     environment:
