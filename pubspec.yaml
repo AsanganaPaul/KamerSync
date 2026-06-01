@@ -1,0 +1,108 @@
+name: kamer_sync
+description: "Cameroon National Land Ownership Management and Verification System"
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  device_preview: ^1.3.1
+
+  # State Management
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
+
+  # Navigation
+  go_router: ^17.2.3
+
+  # Networking
+  http: ^1.2.2
+  dio: ^5.7.0
+
+  # Local Storage
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^10.3.1
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  google_fonts: ^8.1.0
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  lottie: ^3.1.2
+  animations: ^2.0.11
+  percent_indicator: ^4.2.3
+  timeline_tile: ^2.0.0
+  fl_chart: ^1.2.0
+
+  # Maps
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
+  flutter_map_marker_cluster: ^8.2.2
+
+  # File & Document Management
+  file_picker: ^5.5.0
+  image_picker: ^1.1.2
+  path_provider: ^2.1.4
+  open_file: ^3.5.7
+  permission_handler: ^12.0.2
+
+  # Firebase
+  firebase_core: ^4.9.0
+  firebase_auth: ^6.5.1
+  cloud_firestore: ^6.4.1
+  firebase_storage: ^13.4.1
+  firebase_messaging: ^16.2.2
+  flutter_local_notifications: ^20.1.0
+
+  # AI Chatbot
+  google_generative_ai: ^0.4.6
+
+  # Crypto / Blockchain simulation
+  crypto: ^3.0.5
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  equatable: ^2.0.5
+  json_annotation: ^4.9.0
+  logger: ^2.4.0
+  url_launcher: ^6.3.1
+  connectivity_plus: ^7.1.1
+  package_info_plus: ^9.0.1
+  flutter_dotenv: ^6.0.1
+  qr_flutter: ^4.1.0
+  pinput: ^6.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.13
+  riverpod_generator: ^4.0.0+1
+  json_serializable: ^6.8.0
+  mockito: ^5.4.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+    - .env
+
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-Regular.ttf
+        - asset: assets/fonts/Outfit-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Outfit-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Outfit-Bold.ttf
+          weight: 700
