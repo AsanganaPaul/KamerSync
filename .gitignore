@@ -43,3 +43,26 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment variables (contains GEMINI_API_KEY)
+.env
+.env.*
+!.env.example
+
+# Web build (full output, though /build/ already covered, but be explicit)
+/build/web/
+
+# Flutter generated files (some IDEs create these)
+*.lock
+.flutter-plugins
+
+# Backup files
+*.bak
+*.orig
+
+# Logs
+*.log
+
+# Windows/macOS specific (already partly covered)
+Thumbs.db
+.DS_Store
