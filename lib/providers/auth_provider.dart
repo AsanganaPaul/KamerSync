@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,6 +52,11 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<AuthState> _loadPersistedAuth() async {
+    // Web does not support flutter_secure_storage, so never restore session
+    if (kIsWeb) {
+      return const AuthState();
+    }
+
     try {
       final token = await _secureStorage.read(key: _tokenKey);
       final prefs = await SharedPreferences.getInstance();
@@ -79,7 +85,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       final authService = ref.read(authServiceProvider);
       final result = await authService.login(email: email, password: password);
 
-      await _persistAuth(result['token'] as String, result['user'] as UserModel);
+      await _persistAuth(
+          result['token'] as String, result['user'] as UserModel);
 
       state = AsyncValue.data(AuthState(
         user: result['user'] as UserModel,
@@ -115,7 +122,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         region: region,
       );
 
-      await _persistAuth(result['token'] as String, result['user'] as UserModel);
+      await _persistAuth(
+          result['token'] as String, result['user'] as UserModel);
 
       state = AsyncValue.data(AuthState(
         user: result['user'] as UserModel,
@@ -132,18 +140,24 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<void> _persistAuth(String token, UserModel user) async {
+    // Web does not persist (in-memory only)
+    if (kIsWeb) return;
+
     await _secureStorage.write(key: _tokenKey, value: token);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, jsonEncode(user.toJson()));
   }
 
   Future<void> _clearStorage() async {
+    // Web has nothing to clear
+    if (kIsWeb) return;
+
     await _secureStorage.delete(key: _tokenKey);
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
   }
 
- UserModel? get currentUser => state.value?.user;
+  UserModel? get currentUser => state.value?.user;
   String? get currentToken => state.value?.token;
   UserRole? get currentRole => state.value?.user?.role;
 }
