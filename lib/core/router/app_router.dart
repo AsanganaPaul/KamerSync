@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../models/user_model.dart';
 import '../../screens/auth/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
@@ -21,8 +22,6 @@ import '../../screens/chatbot/chatbot_screen.dart';
 import '../../screens/audit/audit_log_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
-
-import '../../models/user_model.dart';
 
 // Route paths
 class AppRoutes {
@@ -53,27 +52,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      // Get the current auth state value
-      final authStateValue = authState.valueOrNull;
-      final isLoggedIn = authStateValue?.isAuthenticated ?? false;
-      
+      final isLoggedIn = authState.isAuthenticated;
       final isAuthRoute = state.fullPath == AppRoutes.login ||
           state.fullPath == AppRoutes.register ||
           state.fullPath == AppRoutes.splash;
-
-      // Show splash while loading auth state
-      if (authState.isLoading && state.fullPath != AppRoutes.splash) {
-        return AppRoutes.splash;
-      }
 
       // If not logged in and not on auth route, go to login
       if (!isLoggedIn && !isAuthRoute) {
         return AppRoutes.login;
       }
 
-      // If logged in and on auth route, go to appropriate dashboard
+      // If logged in and on auth route (except splash), go to dashboard
       if (isLoggedIn && isAuthRoute && state.fullPath != AppRoutes.splash) {
-        final user = authStateValue?.user;
+        final user = authState.user;
         if (user?.role == UserRole.citizen) {
           return AppRoutes.citizenDashboard;
         } else {

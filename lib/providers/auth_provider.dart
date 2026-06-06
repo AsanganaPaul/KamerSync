@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
-/// Auth state
+// Simple auth state – not AsyncNotifier
 class AuthState {
   final UserModel? user;
   final String? token;
@@ -28,34 +28,27 @@ class AuthState {
     String? token,
     bool? isLoading,
     String? error,
-    bool clearError = false,
-    bool clearUser = false,
   }) {
     return AuthState(
-      user: clearUser ? null : (user ?? this.user),
-      token: clearUser ? null : (token ?? this.token),
+      user: user ?? this.user,
+      token: token ?? this.token,
       isLoading: isLoading ?? this.isLoading,
-      error: clearError ? null : (error ?? this.error),
+      error: error ?? this.error,
     );
   }
 }
 
-/// Auth state notifier
-class AuthNotifier extends AsyncNotifier<AuthState> {
+class AuthNotifier extends StateNotifier<AuthState> {
   static const _tokenKey = 'auth_token';
   static const _userKey = 'auth_user';
   final _secureStorage = const FlutterSecureStorage();
 
-  @override
-  Future<AuthState> build() async {
-    return _loadPersistedAuth();
+  AuthNotifier() : super(const AuthState()) {
+    _loadPersistedAuth();
   }
 
-  Future<AuthState> _loadPersistedAuth() async {
-    // Web does not support flutter_secure_storage, so never restore session
-    if (kIsWeb) {
-      return const AuthState();
-    }
+  Future<void> _loadPersistedAuth() async {
+    if (kIsWeb) return;
 
     try {
       final token = await _secureStorage.read(key: _tokenKey);
@@ -66,34 +59,32 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         final user = UserModel.fromJson(
           jsonDecode(userJson) as Map<String, dynamic>,
         );
-        return AuthState(user: user, token: token);
+        state = state.copyWith(user: user, token: token);
       }
     } catch (e) {
-      // Clear corrupt data
       await _clearStorage();
     }
-    return const AuthState();
   }
 
   Future<void> login({
     required String email,
     required String password,
   }) async {
-    state = const AsyncValue.loading();
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final authService = ref.read(authServiceProvider);
+      final authService = AuthService();
       final result = await authService.login(email: email, password: password);
 
-      await _persistAuth(
-          result['token'] as String, result['user'] as UserModel);
-
-      state = AsyncValue.data(AuthState(
+      await _persistAuth(result['token'] as String, result['user'] as UserModel);
+      state = state.copyWith(
         user: result['user'] as UserModel,
         token: result['token'] as String,
-      ));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      rethrow;
     }
   }
 
@@ -107,10 +98,10 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     String? nationalId,
     String? region,
   }) async {
-    state = const AsyncValue.loading();
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final authService = ref.read(authServiceProvider);
+      final authService = AuthService();
       final result = await authService.register(
         email: email,
         password: password,
@@ -122,62 +113,50 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         region: region,
       );
 
-      await _persistAuth(
-          result['token'] as String, result['user'] as UserModel);
-
-      state = AsyncValue.data(AuthState(
+      await _persistAuth(result['token'] as String, result['user'] as UserModel);
+      state = state.copyWith(
         user: result['user'] as UserModel,
         token: result['token'] as String,
-      ));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      rethrow;
     }
   }
 
   Future<void> logout() async {
     await _clearStorage();
-    state = const AsyncValue.data(AuthState());
+    state = const AuthState();
   }
 
   Future<void> _persistAuth(String token, UserModel user) async {
-    // Web does not persist (in-memory only)
     if (kIsWeb) return;
-
     await _secureStorage.write(key: _tokenKey, value: token);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, jsonEncode(user.toJson()));
   }
 
   Future<void> _clearStorage() async {
-    // Web has nothing to clear
     if (kIsWeb) return;
-
     await _secureStorage.delete(key: _tokenKey);
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
   }
-
-  UserModel? get currentUser => state.value?.user;
-  String? get currentToken => state.value?.token;
-  UserRole? get currentRole => state.value?.user?.role;
 }
 
-/// Auth providers
+// Change provider to StateNotifierProvider
 final authStateProvider =
-    AsyncNotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
 
 final currentUserProvider = Provider<UserModel?>((ref) {
-  return ref.watch(authStateProvider).value?.user;
+  return ref.watch(authStateProvider).user;
 });
 
 final currentRoleProvider = Provider<UserRole?>((ref) {
   return ref.watch(currentUserProvider)?.role;
 });
 
-final authTokenProvider = Provider<String?>((ref) {
-  return ref.watch(authStateProvider).value?.token;
-});
-
 final isAuthenticatedProvider = Provider<bool>((ref) {
-  return ref.watch(authStateProvider).value?.isAuthenticated ?? false;
+  return ref.watch(authStateProvider).isAuthenticated;
 });

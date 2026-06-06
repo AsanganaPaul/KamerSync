@@ -125,7 +125,7 @@ class AuthService {
     return demoAccounts[email] == password;
   }
 
-  Map<String, dynamic> _demoLogin(String email) {
+    Map<String, dynamic> _demoLogin(String email) {
     UserModel user;
     switch (email) {
       case 'officer@mindcaf.cm':

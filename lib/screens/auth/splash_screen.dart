@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
@@ -43,29 +42,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
+    // Get the current auth state (now a simple object, not AsyncValue)
     final authState = ref.read(authStateProvider);
+    final isLoggedIn = authState.isAuthenticated;
+    final user = authState.user;
 
-    await authState.when(
-      data: (state) async {
-        if (state.isAuthenticated) {
-          final role = state.user!.role;
-          if (role == UserRole.citizen) {
-            context.go(AppRoutes.citizenDashboard);
-          } else {
-            context.go(AppRoutes.officerDashboard);
-          }
-        } else {
-          context.go(AppRoutes.login);
-        }
-      },
-      loading: () async {
-        await Future.delayed(const Duration(seconds: 1));
-        if (mounted) context.go(AppRoutes.login);
-      },
-      error: (_, __) async {
-        if (mounted) context.go(AppRoutes.login);
-      },
-    );
+    if (isLoggedIn && user != null) {
+      if (user.role == UserRole.citizen) {
+        context.go(AppRoutes.citizenDashboard);
+      } else {
+        context.go(AppRoutes.officerDashboard);
+      }
+    } else {
+      context.go(AppRoutes.login);
+    }
   }
 
   @override
