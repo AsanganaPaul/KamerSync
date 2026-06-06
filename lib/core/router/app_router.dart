@@ -22,6 +22,8 @@ import '../../screens/audit/audit_log_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 
+import '../../models/user_model.dart';
+
 // Route paths
 class AppRoutes {
   static const splash = '/';
@@ -51,17 +53,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final isLoggedIn = authState.value?.isAuthenticated ?? false;
+      // Get the current auth state value
+      final authStateValue = authState.valueOrNull;
+      final isLoggedIn = authStateValue?.isAuthenticated ?? false;
+      
       final isAuthRoute = state.fullPath == AppRoutes.login ||
           state.fullPath == AppRoutes.register ||
           state.fullPath == AppRoutes.splash;
 
-      // Let splash handle its own redirect
-      if (state.fullPath == AppRoutes.splash) return null;
+      // Show splash while loading auth state
+      if (authState.isLoading && state.fullPath != AppRoutes.splash) {
+        return AppRoutes.splash;
+      }
 
+      // If not logged in and not on auth route, go to login
       if (!isLoggedIn && !isAuthRoute) {
         return AppRoutes.login;
       }
+
+      // If logged in and on auth route, go to appropriate dashboard
+      if (isLoggedIn && isAuthRoute && state.fullPath != AppRoutes.splash) {
+        final user = authStateValue?.user;
+        if (user?.role == UserRole.citizen) {
+          return AppRoutes.citizenDashboard;
+        } else {
+          return AppRoutes.officerDashboard;
+        }
+      }
+
+      // No redirect needed
       return null;
     },
     routes: [
